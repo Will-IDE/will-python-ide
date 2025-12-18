@@ -11,45 +11,47 @@
   <style>
     body {
       font-family: monospace;
+      background-color: #1e1e1e;
+      color: white;
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin: 0;
       padding: 20px;
-      background-color: #1e1e1e;
-      color: #ffffff;
+      margin: 0;
     }
 
-    #editor {
+    /* 🔥 THIS FIXES THE COLLAPSED EDITOR */
+    .CodeMirror {
       width: 80%;
       height: 300px;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    #runBtn {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
       margin-bottom: 10px;
     }
 
     #output {
       width: 80%;
       min-height: 150px;
-      background-color: #1e1e1e;
+      background-color: #111;
       color: #00ff00;
       border: 1px solid #333;
       padding: 10px;
-      overflow: auto;
       white-space: pre-wrap;
-    }
-
-    #runBtn {
-      margin-bottom: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
+      overflow-y: auto;
     }
 
     #inputBox {
       width: 80%;
-      padding: 5px;
-      margin-top: 5px;
-      font-family: monospace;
+      padding: 6px;
       font-size: 16px;
+      font-family: monospace;
+      margin-top: 5px;
       display: none;
     }
   </style>
@@ -62,28 +64,28 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
 </head>
+
 <body>
   <h1>My Python IDE</h1>
 
-  <!-- Editor container -->
+  <!-- Editor -->
   <textarea id="editor"></textarea>
+
   <button id="runBtn">Run Python</button>
 
   <h2>Output:</h2>
   <pre id="output"></pre>
 
-  <!-- Input box for inline input -->
-  <input id="inputBox" placeholder="Type your input and press Enter" />
+  <input id="inputBox" placeholder="Type input and press Enter">
 
   <script>
-    // Initialize CodeMirror
+    // Init CodeMirror
     const editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
       mode: "python",
       theme: "dracula",
       lineNumbers: true,
       indentUnit: 4,
-      tabSize: 4,
-      autofocus: true
+      tabSize: 4
     });
 
     const output = document.getElementById("output");
@@ -95,15 +97,11 @@
     }
 
     function builtinInput(promptText) {
-      // Show prompt in output window
-      output.textContent += promptText + "\n\n";  
-
-      // Show input box
+      output.textContent += promptText + "\n\n";
       inputBox.style.display = "block";
-      inputBox.value = "";
       inputBox.focus();
 
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         inputResolve = resolve;
       });
     }
@@ -111,16 +109,16 @@
     inputBox.addEventListener("keydown", function(e) {
       if (e.key === "Enter" && inputResolve) {
         const value = inputBox.value;
-        outf(value + "\n");          // show user input in output
-        inputBox.style.display = "none"; // hide input box
-        inputResolve(value);          // return value to Python
+        output.textContent += value + "\n";
+        inputBox.value = "";
+        inputBox.style.display = "none";
+        inputResolve(value);
         inputResolve = null;
       }
     });
 
     function runCode() {
-      const prog = editor.getValue();
-      output.textContent = ""; // clear previous output
+      output.textContent = "";
 
       Sk.configure({
         output: outf,
@@ -129,15 +127,15 @@
         inputfunTakesPrompt: true
       });
 
-      Sk.misceval.asyncToPromise(function() {
-        return Sk.importMainWithBody("<stdin>", false, prog, true);
-      }).catch(function(err){
+      Sk.misceval.asyncToPromise(() =>
+        Sk.importMainWithBody("<stdin>", false, editor.getValue(), true)
+      ).catch(err => {
         output.textContent += err.toString();
       });
     }
 
-    function builtinRead(x){
-      if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+    function builtinRead(x) {
+      if (!Sk.builtinFiles || !Sk.builtinFiles["files"][x])
         throw "File not found: '" + x + "'";
       return Sk.builtinFiles["files"][x];
     }
@@ -146,6 +144,7 @@
   </script>
 </body>
 </html>
+
 
 
 
