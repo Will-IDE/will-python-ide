@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>WIDE</title>
   <meta charset="UTF-8">
+  <title>WIDE - Web-based Python IDE</title>
 
   <!-- Page styling -->
   <style>
@@ -16,18 +16,6 @@
       background-color: #1e1e1e;
       color: #ffffff;
     }
-    textarea {
-      width: 80%;
-      height: 300px;
-      background-color: #252526;
-      color: #ffffff;
-      border: 1px solid #333;
-      padding: 10px;
-      font-family: monospace;
-      font-size: 16px;
-      resize: vertical;
-      overflow: auto;
-    }
     #output {
       width: 80%;
       min-height: 150px;
@@ -36,13 +24,28 @@
       border: 1px solid #333;
       padding: 10px;
       overflow: auto;
+      margin-top: 10px;
     }
     button {
       margin-top: 10px;
       padding: 10px;
       cursor: pointer;
     }
+    .CodeMirror {
+      width: 80%;
+      height: 300px;
+      background-color: #252526;
+      color: #ffffff;
+      border: 1px solid #333;
+      font-family: monospace;
+      font-size: 16px;
+    }
   </style>
+
+  <!-- CodeMirror CSS & JS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
 
   <!-- Skulpt library to run Python in browser -->
   <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
@@ -63,6 +66,19 @@
   <h2>Output:</h2>
   <pre id="output"></pre>
 
+  <!-- Initialize CodeMirror -->
+  <script>
+    const editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+      mode: "python",
+      theme: "default",
+      lineNumbers: true,
+      indentUnit: 4,
+      tabSize: 4,
+      matchBrackets: true,
+      autoCloseBrackets: true
+    });
+  </script>
+
   <!-- JS to run Python -->
   <script>
     function outf(text) {
@@ -76,7 +92,7 @@
     }
 
     function runCode() {
-      const prog = document.getElementById("editor").value;
+      const prog = editor.getValue(); // get code from CodeMirror
       document.getElementById("output").textContent = "";
       Sk.configure({output:outf, read:builtinRead});
       Sk.misceval.asyncToPromise(function() {
@@ -91,6 +107,7 @@
 
 </body>
 </html>
+
 
 
 
