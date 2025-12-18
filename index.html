@@ -37,7 +37,7 @@
       border: 1px solid #333;
       padding: 10px;
       overflow: auto;
-      white-space: pre-wrap; /* ensures newlines work */
+      white-space: pre-wrap;
     }
 
     #runBtn {
@@ -53,7 +53,7 @@
       margin-top: 5px;
       font-family: monospace;
       font-size: 16px;
-      display: none; /* hidden until needed */
+      display: none;
     }
   </style>
 
@@ -70,23 +70,25 @@
   <h2>Output:</h2>
   <pre id="output"></pre>
 
-  <!-- Optional input box for inline input -->
-  <input id="inputBox" placeholder="Type input and press Enter" />
+  <!-- Input box for inline input -->
+  <input id="inputBox" placeholder="Type your input and press Enter" />
 
   <script>
     const output = document.getElementById("output");
     const inputBox = document.getElementById("inputBox");
+    let inputResolve = null;
 
     function outf(text) {
       output.textContent += text;
     }
 
-    let inputResolve = null;
-
-    // Use input box instead of popup
     function builtinInput(promptText) {
-      output.textContent += promptText; // show prompt in output
+      // Show prompt in output window
+      output.textContent += promptText + "\n\n";  // prompt + blank line
+
+      // Show input box
       inputBox.style.display = "block";
+      inputBox.value = "";
       inputBox.focus();
 
       return new Promise((resolve) => {
@@ -96,11 +98,10 @@
 
     inputBox.addEventListener("keydown", function(e) {
       if (e.key === "Enter" && inputResolve) {
-        const value = inputBox.value + "\n";
-        outf(value); // show user input in output
-        inputBox.value = "";
-        inputBox.style.display = "none";
-        inputResolve(value.trim());
+        const value = inputBox.value;
+        outf(value + "\n");          // show user input in output
+        inputBox.style.display = "none"; // hide input box
+        inputResolve(value);          // return value to Python
         inputResolve = null;
       }
     });
@@ -118,7 +119,22 @@
 
       Sk.misceval.asyncToPromise(function() {
         return Sk.importMainWithBody("<stdin>", false, prog, true);
-      }).catch(function
+      }).catch(function(err){
+        output.textContent += err.toString();
+      });
+    }
+
+    function builtinRead(x){
+      if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+        throw "File not found: '" + x + "'";
+      return Sk.builtinFiles["files"][x];
+    }
+
+    document.getElementById("runBtn").addEventListener("click", runCode);
+  </script>
+</body>
+</html>
+
 
 
 
